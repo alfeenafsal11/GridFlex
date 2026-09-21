@@ -1,0 +1,45 @@
+# GridFlex AI - Experimental Scenarios Configuration
+
+# Experiment D: Renewable Penetration Sensitivity
+penetration_scenarios:
+  low_penetration:
+    penetration: 0.20
+    description: "20% annual solar energy relative to annual electrical demand"
+  medium_penetration:
+    penetration: 0.40
+    description: "40% annual solar energy relative to annual electrical demand (base)"
+  high_penetration:
+    penetration: 0.60
+    description: "60% annual solar energy relative to annual electrical demand"
+
+# Experiment E: Battery Duration Sensitivity
+duration_scenarios:
+  duration_2h:
+    duration_hours: 2.0
+    c_rate: 0.5
+    capacity_kwh: 2500.0
+    max_charge_kw: 1250.0
+    max_discharge_kw: 1250.0
+    description: "2-hour storage duration at nominal power"
+  duration_4h:
+    duration_hours: 4.0
+    c_rate: 0.25
+    capacity_kwh: 5000.0
+    max_charge_kw: 1250.0
+    max_discharge_kw: 1250.0
+    description: "4-hour storage duration at nominal power (base)"
+
+# Experiment F: Forecast Noise Sensitivity
+noise_scenarios:
+  clean:
+    noise_std: 0.0
+    description: "Standard model forecast"
+  noise_low:
+    noise_std: 0.10
+    description: "Forecast perturbed by 10% Gaussian relative noise"
+  noise_medium:
+    noise_std: 0.20
+    description: "Forecast perturbed by 20% Gaussian relative noise"
+  noise_high:
+    noise_std: 0.30
+    description: "Forecast perturbed by 30% Gaussian relative noise"
