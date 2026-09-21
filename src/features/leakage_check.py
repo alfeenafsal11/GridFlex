@@ -67,6 +67,22 @@ def run_perturbation_leakage_audit(
             }
         )
 
+    # Check horizon-specific features across h=1..24
+    from src.features.engineer import construct_horizon_feature_matrix
+    for h in [1, 6, 12, 18, 24]:
+        X_h_orig, _ = construct_horizon_feature_matrix(df, h=h)
+        for t0_idx in test_indices:
+            df_corrupted = df.copy()
+            for offset in [1, 5, 12, 24]:
+                if t0_idx + offset < len(df):
+                    df_corrupted.iloc[t0_idx + offset, df.columns.get_loc("load_kw")] = 9.99e9
+                    df_corrupted.iloc[t0_idx + offset, df.columns.get_loc("solar_kw")] = 9.99e9
+            X_h_corrupted, _ = construct_horizon_feature_matrix(df_corrupted, h=h)
+            h_diff = float((X_h_orig.iloc[t0_idx] - X_h_corrupted.iloc[t0_idx]).abs().max())
+            if h_diff > 0.0:
+                audit_results["violations"] += 1
+                logger.error("Horizon %d leakage violation at index %d: diff=%.6e", h, t0_idx, h_diff)
+
     logger.info(
         "Temporal Leakage Audit: %d/%d test points passed (Violations: %d).",
         len(test_indices) - audit_results["violations"],

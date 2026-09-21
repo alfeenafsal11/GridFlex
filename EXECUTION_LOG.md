@@ -94,6 +94,28 @@ This document records all phase executions, commands, metrics, anomalies, and ac
   - `ruff check src/ tests/ configs/`: All checks passed.
 - **Acceptance Gate**: PASSED.
 
+---
+
+## Phase 5: Forecasting Models
+- **Timestamp**: 2026-09-21
+- **Status**: COMPLETED
+- **Implementations**:
+  - Implemented 24-hour seasonal persistence baseline in `src/forecasting/baseline.py`.
+  - Implemented direct multi-horizon LightGBM regressors in `src/forecasting/lightgbm_model.py`.
+  - Implemented evaluation and prediction pipeline in `src/forecasting/evaluate.py`.
+- **Numerical Results (Held-Out Test Set, 1,290 Hours)**:
+  - Immediate lookahead $h=1$ Demand: LightGBM MAE = 47.06 kW vs Persistence MAE = 109.56 kW (57.05% error reduction, RMSE 68.79 kW vs 148.97 kW).
+  - Immediate lookahead $h=1$ Solar: LightGBM MAE = 67.59 kW vs Persistence MAE = 86.20 kW (21.59% error reduction, RMSE 157.06 kW vs 225.10 kW).
+- **Generated Artifacts**:
+  - `data/processed/test_predictions.parquet` (all 24 horizons for actuals, LightGBM, persistence).
+  - `data/processed/forecast_metrics.json`.
+  - `figures/fig05_forecast_performance.png`.
+- **Quality Checks**:
+  - `pytest tests/test_forecasting.py -v`: PASSED (12/12 total tests passed).
+  - `ruff check src/ tests/ configs/`: All checks passed.
+- **Acceptance Gate**: PASSED.
+
+
 
 
 
