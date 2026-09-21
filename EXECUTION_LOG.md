@@ -78,6 +78,23 @@ This document records all phase executions, commands, metrics, anomalies, and ac
   - `ruff check src/ tests/ configs/`: All checks passed.
 - **Acceptance Gate**: PASSED.
 
+---
+
+## Phase 4: Forecasting Dataset Construction
+- **Timestamp**: 2026-09-21
+- **Status**: COMPLETED
+- **Features Implemented**:
+  - Implemented `src/features/engineer.py` with 35 causal predictors (11 calendar/cyclical, 12 demand lags/rolling, 12 solar lags/rolling).
+  - Multi-horizon direct target builder ($h = 1 \dots 24$).
+- **Leakage Verification**:
+  - Implemented `src/features/leakage_check.py` with perturbation-based future-invariance and past-sensitivity validation.
+  - Result: 6/6 tested points passed with exactly 0.000000 future difference and 0 leakage violations.
+- **Quality Checks**:
+  - `pytest tests/test_features.py -v`: PASSED (9/9 total tests passed).
+  - `ruff check src/ tests/ configs/`: All checks passed.
+- **Acceptance Gate**: PASSED.
+
+
 
 
 
