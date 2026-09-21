@@ -40,4 +40,21 @@ This document records all phase executions, commands, metrics, anomalies, and ac
 - **Formulation**: Documented exact renewable penetration scaling $C_{solar} = \rho \sum P_{load} / \sum s(t)$.
 - **Acceptance Gate**: PASSED.
 
+---
+
+## Phase 2: Cleaning and Preprocessing
+- **Timestamp**: 2026-09-21
+- **Status**: COMPLETED
+- **Processing**:
+  - Combined 15-minute load, normalized solar, and EPEX price series.
+  - Causal forward-fill applied to the single 3-step missing gap (DST transition, 2024-10-27).
+  - Aggregated 35,136 records to 8,784 hourly intervals (UTC).
+  - Calibrated 40% renewable penetration: $C_{solar} = 4,833.02\text{ kW}$, yielding exactly $6,518.74\text{ MWh}$ against $16,296.84\text{ MWh}$ demand.
+  - Saved clean hourly parquet dataset to `data/processed/gridflex_hourly.parquet`.
+- **Quality Checks**:
+  - `pytest tests/test_preprocess.py -v`: PASSED (4/4 total tests passed).
+  - `ruff check src/ tests/ configs/`: All checks passed.
+- **Acceptance Gate**: PASSED.
+
+
 
