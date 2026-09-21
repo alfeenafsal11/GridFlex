@@ -146,6 +146,23 @@ This document records all phase executions, commands, metrics, anomalies, and ac
   - `ruff check src/ tests/ configs/`: All checks passed.
 - **Acceptance Gate**: PASSED.
 
+---
+
+## Phase 8: Rolling-Horizon Control
+- **Timestamp**: 2026-09-21
+- **Status**: COMPLETED
+- **Implementations**:
+  - Implemented receding-horizon MPC simulation loop in `src/optimization/rolling_horizon.py`.
+  - Enforced single-action execution protocol (action at $h=1$ applied, followed by 1-hour time advancement and re-optimization).
+  - Actuation applied to physical `BatterySimulator` under actual measured conditions.
+- **Unit Tests**:
+  - Implemented `tests/test_rolling_horizon.py` covering smoke tests on real predictions and Oracle mode.
+- **Quality Checks**:
+  - `pytest tests/test_rolling_horizon.py -v`: PASSED (23/23 total tests passed).
+  - `ruff check src/ tests/ configs/`: All checks passed.
+- **Acceptance Gate**: PASSED.
+
+
 
 
 
