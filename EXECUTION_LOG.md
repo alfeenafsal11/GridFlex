@@ -24,3 +24,20 @@ This document records all phase executions, commands, metrics, anomalies, and ac
   - `ruff check src/ tests/ configs/`: All checks passed.
 - **Acceptance Gate**: PASSED.
 
+---
+
+## Phase 1: Data Acquisition and Audit
+- **Timestamp**: 2026-09-21
+- **Status**: COMPLETED
+- **Dataset**: `OpenSTEF/liander2024-energy-forecasting-benchmark`
+- **Acquisition**: Downloaded `load_measurements/mv_feeder/OS Leiden Noord.parquet`, `load_measurements/mv_feeder/OS Edam.parquet`, `load_measurements/solar_park/Within 10 kilometers of Westwoud_normalized.parquet`, `EPEX.parquet`, and `liander2024_targets.yaml` to `data/raw/`.
+- **Findings**:
+  - Full 2024 calendar leap year: 35,136 timesteps at 15-minute resolution in UTC.
+  - Load: `OS Leiden Noord` selected (positive consumer load: [986.67 kW, 3,763.33 kW], mean 1,855.33 kW).
+  - Solar: `Westwoud` normalized load ([-1.0, 0.01]; generation extracted as $s(t) = \max(0, -\text{load})$).
+  - Price: `EPEX_NL` in EUR/MWh ([-200.0, 872.96], mean 77.29 EUR/MWh).
+  - Missingness: 3 records (0.0085%) on 2024-10-27 during DST transition.
+- **Formulation**: Documented exact renewable penetration scaling $C_{solar} = \rho \sum P_{load} / \sum s(t)$.
+- **Acceptance Gate**: PASSED.
+
+

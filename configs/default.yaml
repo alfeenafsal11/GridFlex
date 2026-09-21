@@ -12,7 +12,8 @@ data:
   processed_filename: "gridflex_hourly.parquet"
   
   # Benchmark assets selected for representative grid node
-  load_feeder: "load_measurements/mv_feeder/OS Edam.parquet"
+  # OS Leiden Noord is selected for purely positive consumption load (no embedded generation distortion)
+  load_feeder: "load_measurements/mv_feeder/OS Leiden Noord.parquet"
   solar_park: "load_measurements/solar_park/Within 10 kilometers of Westwoud_normalized.parquet"
   price_file: "EPEX.parquet"
   
