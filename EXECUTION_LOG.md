@@ -56,5 +56,28 @@ This document records all phase executions, commands, metrics, anomalies, and ac
   - `ruff check src/ tests/ configs/`: All checks passed.
 - **Acceptance Gate**: PASSED.
 
+---
+
+## Phase 3: Exploratory Analysis and Baselines
+- **Timestamp**: 2026-09-21
+- **Status**: COMPLETED
+- **Implementations**:
+  - Implemented Baseline A (`run_grid_only_baseline`) and Baseline B (`run_rule_based_battery_baseline`) in `src/battery/rule_based.py`.
+  - Implemented full exploratory analysis and figure generation in `src/evaluation/exploratory.py`.
+- **Numerical Results (Full Year 2024)**:
+  - Grid-Only: Grid Import = 11,790,780 kWh, Cost = €1,096,594, Curtailment = 2,012,673 kWh, Utilisation = 69.12%, Peak = 3,618.26 kW.
+  - Rule-Based Battery: Grid Import = 11,108,190 kWh (-5.79%), Cost = €1,022,338 (-6.77%), Curtailment = 1,258,453 kWh (-37.47%), Utilisation = 80.69% (+11.57 pp), Peak = 3,618.26 kW (0.00% peak reduction).
+  - Energy Balance Error: $< 10^{-12}\text{ kW}$ across all timesteps.
+- **Generated Figures**:
+  - `figures/fig01_demand_vs_solar.png`
+  - `figures/fig02_daily_profiles.png`
+  - `figures/fig03_price_distribution.png`
+  - `figures/fig04_baseline_comparison.png`
+- **Quality Checks**:
+  - `pytest tests/test_baselines.py -v`: PASSED (6/6 total tests passed).
+  - `ruff check src/ tests/ configs/`: All checks passed.
+- **Acceptance Gate**: PASSED.
+
+
 
 
