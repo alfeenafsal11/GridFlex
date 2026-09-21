@@ -1,0 +1,382 @@
+{
+  "core_systems": {
+    "system_a": {
+      "system": "System A: Grid-Only",
+      "total_demand_kwh": 2819622.0833333335,
+      "total_solar_kwh": 159401.43194554673,
+      "total_grid_kwh": 2660220.6513877865,
+      "peak_grid_kw": 3279.166666666667,
+      "total_curt_kwh": 0.0,
+      "renewable_utilisation_pct": 100.0,
+      "total_cost_eur": 312512.86312746664,
+      "battery_throughput_kwh": 0.0,
+      "soc_mean": 0.0,
+      "soc_min": 0.0,
+      "soc_max": 0.0,
+      "max_balance_error_kw": 4.547473508864641e-13,
+      "constraint_violations": 0
+    },
+    "system_b": {
+      "system": "System B: Rule-Based Battery",
+      "total_demand_kwh": 2819622.0833333335,
+      "total_solar_kwh": 159401.43194554673,
+      "total_grid_kwh": 2658320.6513877865,
+      "peak_grid_kw": 3279.166666666667,
+      "total_curt_kwh": 0.0,
+      "renewable_utilisation_pct": 100.0,
+      "total_cost_eur": 312194.0766274666,
+      "battery_throughput_kwh": 1900.0,
+      "soc_mean": 0.10041615667074662,
+      "soc_min": 0.1,
+      "soc_max": 0.5,
+      "max_balance_error_kw": 4.547473508864641e-13,
+      "constraint_violations": 0
+    },
+    "system_c": {
+      "system": "System C: Forecast-Informed Optimization",
+      "total_demand_kwh": 2819622.0833333335,
+      "total_solar_kwh": 159401.43194554673,
+      "total_grid_kwh": 2678331.8043696713,
+      "peak_grid_kw": 3033.400659586602,
+      "total_curt_kwh": 0.0,
+      "renewable_utilisation_pct": 100.0,
+      "total_cost_eur": 298741.89306464745,
+      "battery_throughput_kwh": 382499.0042565152,
+      "soc_mean": 0.4370567331846839,
+      "soc_min": 0.1,
+      "soc_max": 0.9,
+      "max_balance_error_kw": 4.547473508864641e-13,
+      "constraint_violations": 0
+    },
+    "system_d": {
+      "system": "System D: Perfect-Foresight Oracle",
+      "total_demand_kwh": 2819622.0833333335,
+      "total_solar_kwh": 159401.43194554673,
+      "total_grid_kwh": 2682513.0953284013,
+      "peak_grid_kw": 2897.5,
+      "total_curt_kwh": 0.0,
+      "renewable_utilisation_pct": 100.0,
+      "total_cost_eur": 296611.2248705883,
+      "battery_throughput_kwh": 468615.20954207587,
+      "soc_mean": 0.5513627427990732,
+      "soc_min": 0.1,
+      "soc_max": 0.9,
+      "max_balance_error_kw": 4.547473508864641e-13,
+      "constraint_violations": 0
+    }
+  },
+  "comparisons": {
+    "exp_a_grid_vs_rule_based": {
+      "grid_reduction_pct": 0.0714226468022044,
+      "peak_reduction_pct": 0.0,
+      "cost_savings_pct": 0.10200748116726963,
+      "utilisation_gain_pp": 0.0
+    },
+    "exp_b_rule_based_vs_forecast_opt": {
+      "grid_reduction_pct": -0.7527742362998188,
+      "peak_reduction_pct": 7.494770228616969,
+      "cost_savings_pct": 4.308916975023617,
+      "utilisation_gain_pp": 0.0
+    },
+    "exp_c_grid_vs_forecast_opt": {
+      "grid_reduction_pct": -0.6808139382136039,
+      "peak_reduction_pct": 7.494770228616969,
+      "cost_savings_pct": 4.406529038519076,
+      "utilisation_gain_pp": 0.0
+    },
+    "oracle_gap": {
+      "cost_gap_pct": 0.7183370066283832,
+      "grid_gap_pct": -0.15587215458562942,
+      "peak_gap_kw": 135.90065958660216
+    }
+  },
+  "experiment_d_penetration": {
+    "20pct": {
+      "penetration": 0.2,
+      "rule_based": {
+        "system": "RB-Pen-20pct",
+        "total_demand_kwh": 2819827.083333333,
+        "total_solar_kwh": 79700.71597277338,
+        "total_grid_kwh": 2738226.36736056,
+        "peak_grid_kw": 3279.166666666667,
+        "total_curt_kwh": 0.0,
+        "renewable_utilisation_pct": 100.0,
+        "total_cost_eur": 319764.87592415884,
+        "battery_throughput_kwh": 1900.0,
+        "soc_mean": 0.10041615667074662,
+        "soc_min": 0.1,
+        "soc_max": 0.5,
+        "max_balance_error_kw": 4.547473508864641e-13,
+        "constraint_violations": 0
+      },
+      "forecast_opt": {
+        "system": "Opt-Pen-20pct",
+        "total_demand_kwh": 2819622.0833333335,
+        "total_solar_kwh": 79700.71597277337,
+        "total_grid_kwh": 2759319.5781192044,
+        "peak_grid_kw": 2978.8809666329767,
+        "total_curt_kwh": 0.0,
+        "renewable_utilisation_pct": 100.0,
+        "total_cost_eur": 306967.7591475835,
+        "battery_throughput_kwh": 412153.0889176935,
+        "soc_mean": 0.49697179565281085,
+        "soc_min": 0.1,
+        "soc_max": 0.9,
+        "max_balance_error_kw": 4.547473508864641e-13,
+        "constraint_violations": 0
+      },
+      "improvement": {
+        "grid_reduction_pct": -0.7703238494111935,
+        "peak_reduction_pct": 9.157378400010886,
+        "cost_savings_pct": 4.002039542207421,
+        "utilisation_gain_pp": 0.0
+      }
+    },
+    "40pct": {
+      "penetration": 0.4,
+      "rule_based": {
+        "system": "RB-Pen-40pct",
+        "total_demand_kwh": 2819827.083333333,
+        "total_solar_kwh": 159401.43194554676,
+        "total_grid_kwh": 2658525.6513877865,
+        "peak_grid_kw": 3279.166666666667,
+        "total_curt_kwh": 0.0,
+        "renewable_utilisation_pct": 100.0,
+        "total_cost_eur": 310962.138656651,
+        "battery_throughput_kwh": 1900.0,
+        "soc_mean": 0.10041615667074662,
+        "soc_min": 0.1,
+        "soc_max": 0.5,
+        "max_balance_error_kw": 4.547473508864641e-13,
+        "constraint_violations": 0
+      },
+      "forecast_opt": {
+        "system": "Opt-Pen-40pct",
+        "total_demand_kwh": 2819622.0833333335,
+        "total_solar_kwh": 159401.43194554673,
+        "total_grid_kwh": 2678331.8043696713,
+        "peak_grid_kw": 3033.400659586602,
+        "total_curt_kwh": 0.0,
+        "renewable_utilisation_pct": 100.0,
+        "total_cost_eur": 298741.89306464745,
+        "battery_throughput_kwh": 382499.0042565152,
+        "soc_mean": 0.4370567331846839,
+        "soc_min": 0.1,
+        "soc_max": 0.9,
+        "max_balance_error_kw": 4.547473508864641e-13,
+        "constraint_violations": 0
+      },
+      "improvement": {
+        "grid_reduction_pct": -0.74500514868253,
+        "peak_reduction_pct": 7.494770228616969,
+        "cost_savings_pct": 3.9298178372437045,
+        "utilisation_gain_pp": 0.0
+      }
+    },
+    "60pct": {
+      "penetration": 0.6,
+      "rule_based": {
+        "system": "RB-Pen-60pct",
+        "total_demand_kwh": 2819827.083333333,
+        "total_solar_kwh": 239102.14791832003,
+        "total_grid_kwh": 2578979.8179393657,
+        "peak_grid_kw": 3279.166666666667,
+        "total_curt_kwh": 0.0,
+        "renewable_utilisation_pct": 100.0,
+        "total_cost_eur": 302134.07923481124,
+        "battery_throughput_kwh": 4922.194898261053,
+        "soc_mean": 0.10078375695862979,
+        "soc_min": 0.1,
+        "soc_max": 0.5,
+        "max_balance_error_kw": 4.547473508864641e-13,
+        "constraint_violations": 0
+      },
+      "forecast_opt": {
+        "system": "Opt-Pen-60pct",
+        "total_demand_kwh": 2819622.0833333335,
+        "total_solar_kwh": 239102.14791832003,
+        "total_grid_kwh": 2598104.180844544,
+        "peak_grid_kw": 3065.5948317345037,
+        "total_curt_kwh": 269.1324530389388,
+        "renewable_utilisation_pct": 99.88744038672087,
+        "total_cost_eur": 290781.53588855825,
+        "battery_throughput_kwh": 363708.0967503097,
+        "soc_mean": 0.3738457460864416,
+        "soc_min": 0.1,
+        "soc_max": 0.9,
+        "max_balance_error_kw": 4.547473508864641e-13,
+        "constraint_violations": 0
+      },
+      "improvement": {
+        "grid_reduction_pct": -0.7415475984786419,
+        "peak_reduction_pct": 6.512991154220988,
+        "cost_savings_pct": 3.757452113645899,
+        "utilisation_gain_pp": -0.11255961327913155
+      }
+    }
+  },
+  "experiment_e_duration": {
+    "2h": {
+      "capacity_kwh": 2500.0,
+      "power_kw": 1250.0,
+      "rule_based": {
+        "system": "RB-Duration-2h",
+        "total_demand_kwh": 2819622.0833333335,
+        "total_solar_kwh": 159401.43194554673,
+        "total_grid_kwh": 2659270.6513877865,
+        "peak_grid_kw": 3279.166666666667,
+        "total_curt_kwh": 0.0,
+        "renewable_utilisation_pct": 100.0,
+        "total_cost_eur": 312350.4701274666,
+        "battery_throughput_kwh": 950.0,
+        "soc_mean": 0.10031007751937983,
+        "soc_min": 0.1,
+        "soc_max": 0.5,
+        "max_balance_error_kw": 4.547473508864641e-13,
+        "constraint_violations": 0
+      },
+      "forecast_opt": {
+        "system": "Opt-Duration-2h",
+        "total_demand_kwh": 2819622.0833333335,
+        "total_solar_kwh": 159401.43194554673,
+        "total_grid_kwh": 2672408.6355550284,
+        "peak_grid_kw": 3096.6984449017123,
+        "total_curt_kwh": 0.0,
+        "renewable_utilisation_pct": 100.0,
+        "total_cost_eur": 302335.69922369055,
+        "battery_throughput_kwh": 257309.12695566815,
+        "soc_mean": 0.496256054960397,
+        "soc_min": 0.1,
+        "soc_max": 0.9,
+        "max_balance_error_kw": 4.547473508864641e-13,
+        "constraint_violations": 0
+      },
+      "improvement": {
+        "grid_reduction_pct": -0.49404464191659736,
+        "peak_reduction_pct": 5.56446927872797,
+        "cost_savings_pct": 3.2062608709022076,
+        "utilisation_gain_pp": 0.0
+      }
+    },
+    "4h": {
+      "capacity_kwh": 5000.0,
+      "power_kw": 1250.0,
+      "rule_based": {
+        "system": "RB-Duration-4h",
+        "total_demand_kwh": 2819622.0833333335,
+        "total_solar_kwh": 159401.43194554673,
+        "total_grid_kwh": 2658320.6513877865,
+        "peak_grid_kw": 3279.166666666667,
+        "total_curt_kwh": 0.0,
+        "renewable_utilisation_pct": 100.0,
+        "total_cost_eur": 312194.0766274666,
+        "battery_throughput_kwh": 1900.0,
+        "soc_mean": 0.10041615667074662,
+        "soc_min": 0.1,
+        "soc_max": 0.5,
+        "max_balance_error_kw": 4.547473508864641e-13,
+        "constraint_violations": 0
+      },
+      "forecast_opt": {
+        "system": "Opt-Duration-4h",
+        "total_demand_kwh": 2819622.0833333335,
+        "total_solar_kwh": 159401.43194554673,
+        "total_grid_kwh": 2678331.8043696713,
+        "peak_grid_kw": 3033.400659586602,
+        "total_curt_kwh": 0.0,
+        "renewable_utilisation_pct": 100.0,
+        "total_cost_eur": 298741.89306464745,
+        "battery_throughput_kwh": 382499.0042565152,
+        "soc_mean": 0.4370567331846839,
+        "soc_min": 0.1,
+        "soc_max": 0.9,
+        "max_balance_error_kw": 4.547473508864641e-13,
+        "constraint_violations": 0
+      },
+      "improvement": {
+        "grid_reduction_pct": -0.7527742362998188,
+        "peak_reduction_pct": 7.494770228616969,
+        "cost_savings_pct": 4.308916975023617,
+        "utilisation_gain_pp": 0.0
+      }
+    }
+  },
+  "experiment_f_noise": {
+    "0pct": {
+      "noise_std": 0.0,
+      "metrics": {
+        "system": "Opt-Noise-0pct",
+        "total_demand_kwh": 2819622.0833333335,
+        "total_solar_kwh": 159401.43194554673,
+        "total_grid_kwh": 2678331.8043696713,
+        "peak_grid_kw": 3033.400659586602,
+        "total_curt_kwh": 0.0,
+        "renewable_utilisation_pct": 100.0,
+        "total_cost_eur": 298741.89306464745,
+        "battery_throughput_kwh": 382499.0042565152,
+        "soc_mean": 0.4370567331846839,
+        "soc_min": 0.1,
+        "soc_max": 0.9,
+        "max_balance_error_kw": 4.547473508864641e-13,
+        "constraint_violations": 0
+      }
+    },
+    "10pct": {
+      "noise_std": 0.1,
+      "metrics": {
+        "system": "Opt-Noise-10pct",
+        "total_demand_kwh": 2819622.0833333335,
+        "total_solar_kwh": 159401.43194554673,
+        "total_grid_kwh": 2680643.846630117,
+        "peak_grid_kw": 3228.7567605123727,
+        "total_curt_kwh": 0.0,
+        "renewable_utilisation_pct": 100.0,
+        "total_cost_eur": 299013.9726390749,
+        "battery_throughput_kwh": 423318.338824188,
+        "soc_mean": 0.454115378464975,
+        "soc_min": 0.1,
+        "soc_max": 0.9,
+        "max_balance_error_kw": 4.547473508864641e-13,
+        "constraint_violations": 0
+      }
+    },
+    "20pct": {
+      "noise_std": 0.2,
+      "metrics": {
+        "system": "Opt-Noise-20pct",
+        "total_demand_kwh": 2819622.0833333335,
+        "total_solar_kwh": 159401.43194554673,
+        "total_grid_kwh": 2684357.7090775454,
+        "peak_grid_kw": 4029.9780688759433,
+        "total_curt_kwh": 0.0,
+        "renewable_utilisation_pct": 100.0,
+        "total_cost_eur": 298942.78756755125,
+        "battery_throughput_kwh": 497986.85516579414,
+        "soc_mean": 0.47154617138370547,
+        "soc_min": 0.1,
+        "soc_max": 0.9,
+        "max_balance_error_kw": 4.547473508864641e-13,
+        "constraint_violations": 0
+      }
+    },
+    "30pct": {
+      "noise_std": 0.3,
+      "metrics": {
+        "system": "Opt-Noise-30pct",
+        "total_demand_kwh": 2819622.0833333335,
+        "total_solar_kwh": 159401.43194554673,
+        "total_grid_kwh": 2686559.881272238,
+        "peak_grid_kw": 4108.386295307501,
+        "total_curt_kwh": 0.0,
+        "renewable_utilisation_pct": 100.0,
+        "total_cost_eur": 297718.4721726194,
+        "battery_throughput_kwh": 542358.2952965763,
+        "soc_mean": 0.4670552485720437,
+        "soc_min": 0.1,
+        "soc_max": 0.9,
+        "max_balance_error_kw": 4.547473508864641e-13,
+        "constraint_violations": 0
+      }
+    }
+  }
+}
