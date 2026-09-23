@@ -266,6 +266,56 @@ This document records all phase executions, commands, metrics, anomalies, and ac
   - `app.py`
 - **Acceptance Gate**: PASSED.
 
+---
+
+## Phase 15: Scientific Audit, Results Reconciliation & Artifact Harmonization
+- **Timestamp**: 2026-09-23
+- **Status**: COMPLETED
+- **Implementations**:
+  - Conducted full-repository scientific audit establishing `reports/experiments_results.json` and `reports/error_analysis_results.json` as the non-negotiable source of truth.
+  - Published comprehensive audit findings in `reports/reconciliation_audit.md`.
+  - Reconciled core performance metrics:
+    - Held-out test period: 1,290 hours (`2024-11-06 06:00` to `2024-12-30 23:00` UTC).
+    - Total Demand: 2,819,622.08 kWh; Total Solar: 159,401.43 kWh.
+    - System C Peak Demand: 3,033.40 kW (-7.49% / -245.77 kW vs Rule-Based 3,279.17 kW).
+    - System C Electricity Cost: €298,741.89 (-4.31% / -€13,452.18 vs Rule-Based €312,194.08).
+    - Grid Energy: System C imports +0.75% more grid energy vs System B (+0.68% vs System A) due to round-trip efficiency losses ($\eta_{rt} = 90.25\%$). Base test demonstrates temporal shifting, not grid energy reduction.
+    - Base Renewable Curtailment: 0.0 kWh across all 4 systems (100.0% utilisation).
+    - Oracle Proximity: Cost gap is +0.72% (within 0.72% of oracle €296,611.22); captures 86.33% of the incremental savings opportunity.
+  - Reconciled Parametric Sensitivity Sweeps:
+    - Penetration (Exp D): Peak reduction = 9.16%, 7.49%, 6.51% at 20%, 40%, 60% penetration. Eliminated unsupported "super-linear" scaling claims. Documented 269.13 kWh curtailment at 60%.
+    - Duration (Exp E): 2h storage (Peak 3,096.70 kW, -5.56% shaving, €302,335.70) vs 4h storage (Peak 3,033.40 kW, -7.49% shaving, €298,741.89).
+    - Forecast Noise (Exp F): Costs remain within €297.7k–€299.0k (disproved false cost surge claims to €316k–€321k); peak grid demand surges to 4,030.0 kW (20%) and 4,108.4 kW (30%), exceeding the grid-only baseline (3,279.17 kW). Replaced unconditional real-grid safety claims with simulated policy sensitivity.
+  - Streamlit Dashboard Remediation (`app.py`):
+    - Completely removed hard-coded fallback constants (`7.49`, `13452`, `99.28`).
+    - Added strict validation halting execution with an explicit error if canonical results are missing.
+    - Dynamically populated comparative tables, KPI metrics, and sensitivity summaries.
+  - Figure Regeneration:
+    - Regenerated Figures 6, 7, 8, 9, 10 directly from canonical experiment outputs.
+    - Regenerated Figure 11 via diagnostic error analysis suite.
+    - Corrected figure file listings in `README.md`.
+  - Documentation Restructuring:
+    - Rewrote `README.md` following the required 8-level scientific hierarchy.
+    - Rebuilt `reports/final_report.md` with explicit "Demonstrated vs Not Demonstrated" boundaries and scientifically qualified conclusions.
+  - Automated Artifact Validation:
+    - Created `src/evaluation/validate_artifacts.py` with hard assertions on all canonical values.
+    - Added `tests/test_validate_artifacts.py` to automated test suite.
+- **Quality Checks & Verification**:
+  - `python -m pytest tests/ -v`: 30/30 passed.
+  - `python -m ruff check src/ tests/ configs/ experiments/ app.py`: All checks passed.
+  - `python -m src.evaluation.validate_artifacts`: All canonical checks passed.
+- **Artifacts**:
+  - `reports/reconciliation_audit.md`
+  - `src/evaluation/validate_artifacts.py`
+  - `tests/test_validate_artifacts.py`
+  - `experiments/run_experiments.py`
+  - `app.py`
+  - `README.md`
+  - `reports/final_report.md`
+  - `EXECUTION_LOG.md`
+- **Acceptance Gate**: PASSED.
+
+
 
 
 
