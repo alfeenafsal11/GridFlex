@@ -41,7 +41,15 @@ def test_analyze_battery_dynamics():
         index=times,
     )
     sim_d = sim_c.copy()
-    res = analyze_battery_dynamics(sim_c, sim_d, min_soc=0.10, max_soc=0.90, tol=0.01)
+    sim_b = pd.DataFrame(
+        {
+            "soc": [0.10] * 10,
+            "battery_charge_kw": [0.0] * 10,
+            "battery_discharge_kw": [0.0] * 10,
+        },
+        index=times,
+    )
+    res = analyze_battery_dynamics(sim_c, sim_d, min_soc=0.10, max_soc=0.90, tol=0.01, sim_b_df=sim_b)
 
     c_dyn = res["system_c_forecast"]
     assert c_dyn["depleted_hours"] == 3
@@ -49,6 +57,11 @@ def test_analyze_battery_dynamics():
     assert c_dyn["intermediate_hours"] == 4
     assert c_dyn["depleted_pct"] == 30.0
     assert c_dyn["saturated_pct"] == 30.0
+
+    b_dyn = res["system_b_rule_based"]
+    assert b_dyn["idle_hours"] == 10
+    assert b_dyn["minimum_soc_hours"] == 10
+    assert b_dyn["idle_pct"] == 100.0
 
 
 def test_analyze_oracle_performance_gap():

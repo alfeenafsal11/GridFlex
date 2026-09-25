@@ -10,14 +10,14 @@
 ---
 
 ## 1. Abstract
-Variable renewable energy (VRE) integration introduces steep ramping, localized substation congestion, and pronounced evening demand peaks across distribution networks. While battery energy storage systems (BESS) offer fast-acting flexibility, standard operational heuristics typically rely on simple surplus-following controllers that only actuate when instantaneous local solar generation exceeds local load. 
+Variable renewable energy (VRE) integration introduces steep ramping, localized substation congestion, and pronounced evening demand peaks across distribution networks. While battery energy storage systems (BESS) offer fast-acting flexibility, this work uses a simple surplus-following reactive controller (which only actuates when instantaneous local solar generation exceeds local load) as a deliberately myopic baseline. 
 
 In this work, we present **GridFlex AI**, an end-to-end, reproducible, and mathematically constrained research prototype investigating how machine-learning-based multi-horizon forecasting coupled with rolling-horizon linear programming (LP) optimization can enhance grid flexibility, shave peak demand, and lower electricity costs compared with a surplus-following rule-based battery controller. 
 
 Using 35,136 auditable 15-minute empirical measurements across calendar year 2024 from the Dutch distribution grid (Alliander / Liander open benchmark) and EPEX day-ahead spot market prices, we evaluate four core energy management systems across an uncorrupted $1,290$-hour held-out winter test set under identical physical battery parameters ($5,000\text{ kWh}$, $1,250\text{ kW}$, round-trip efficiency $\eta_{rt} = 90.25\%$, $\text{SOC} \in [0.10, 0.90]$).
 
 Our empirical findings demonstrate:
-1. **The Heuristic Inaction Trap**: In low-renewable winter regimes, a surplus-following rule-based controller delivers **$0.00\%$ peak demand reduction** and saves only **$0.10\%$** (€318.79) because instantaneous solar generation ($159.4\text{ MWh}$) never exceeds consumer demand ($2,819.6\text{ MWh}$), leaving the battery idle at minimum SOC for $99.85\%$ of the test hours.
+1. **The Heuristic Inaction Trap**: In low-renewable winter regimes, a surplus-following rule-based controller delivers **$0.00\%$ peak demand reduction** and saves only **$0.10\%$** (€318.79) because instantaneous solar generation ($159.4\text{ MWh}$) never exceeds consumer demand ($2,819.6\text{ MWh}$), leaving the battery idle at minimum SOC for **1,288 of the 1,290 test hours ($99.845\%$, or approximately $99.85\%$)**.
 2. **Forecast Optimization Efficacy**: The proposed Model Predictive Control (MPC) system achieves a **$7.49\%$ peak demand reduction ($245.77\text{ kW}$ shaved)** and saves **$€13,452.18$ ($4.31\%$)** over the rule-based baseline through price-aware off-peak charging and strategic on-peak discharging, while strictly maintaining zero constraint violations.
 3. **Temporal Energy Shifting vs Total Energy**: GridFlex AI does not reduce total grid energy consumption in the base winter test (+0.75% vs rule-based, +0.68% vs grid-only) due to conversion losses inherent to the 90.25% round-trip battery efficiency. Both renewable curtailment ($0.0\text{ kWh}$) and renewable utilisation ($100.0\%$) are identical across all four evaluated systems; the demonstrated value lies in temporal flexibility, peak shaving, and cost management.
 4. **Oracle Cost Proximity**: Total electricity cost under GridFlex AI is within **$0.72\%$** of the theoretical perfect-foresight oracle cost, capturing **$86.33\%$** of the incremental cost-saving opportunity between the rule-based baseline and the oracle.
@@ -115,12 +115,16 @@ Across the $1,290$-hour held-out test set, immediate lookahead ($h=1$) metrics d
 
 | Target Series | Model Architecture | MAE (kW) | RMSE (kW) | nRMSE (%) | Error Reduction vs Persistence |
 | :--- | :--- | :--- | :--- | :--- | :--- |
-| **Consumer Load** | LightGBM Direct ($h=1$) | **47.06** | **68.79** | **3.06%** | **-57.05%** |
-| | Persistence Baseline ($h=1$) | 109.56 | 148.97 | 7.67% | 0.00% (ref) |
-| **Solar PV** | LightGBM Direct ($h=1$) | **67.59** | **157.06** | **100.08%** | **-21.59%** |
-| | Persistence Baseline ($h=1$) | 86.20 | 225.10 | 149.83% | 0.00% (ref) |
+| **Consumer Load** | LightGBM Direct ($h=1$) | **47.06** | **62.40** | **2.85%** | **-57.05%** |
+| | Persistence Baseline ($h=1$) | 109.56 | 151.83 | 6.95% | 0.00% (ref) |
+| **Solar PV** | LightGBM Direct ($h=1$) | **67.59** | **123.59** | **100.02%** | **-21.59%** |
+| | Persistence Baseline ($h=1$) | 86.20 | 222.62 | 180.16% | 0.00% (ref) |
 
-**Horizon-Dependent Uncertainty**: As documented in Figure 5, forecasting accuracy is strongest at short horizons ($h=1$) and degrades steadily with forecast lead time. For consumer load, MAE rises from $47.06\text{ kW}$ at $h=1$ to $104.2\text{ kW}$ at $h=24$. For solar PV, MAE rises from $67.59\text{ kW}$ to $105.8\text{ kW}$. Consequently, the optimization controller does not operate with uniform foresight across its 24-hour horizon, which directly influences dispatch quality.
+**Horizon-Dependent Uncertainty**: As documented in Figure 5, forecasting accuracy is strongest at the immediate lookahead horizon ($h=1$), where LightGBM achieves a 57.05% MAE reduction on load (47.06 kW vs 109.56 kW persistence) and a 21.59% reduction on solar (67.59 kW vs 86.20 kW persistence). Beyond the immediate horizon, error does not degrade monotonically:
+- **Load Demand**: LightGBM MAE rises sharply over the first five hours (47.06 kW at $h=1$ to 119.66 kW at $h=5$), then plateaus with diurnal oscillations between ~120 kW and ~140 kW, reaching **135.91 kW at $h=24$**. Load persistence remains relatively flat across all 24 horizons (~109.4 kW to 110.0 kW, ending at **109.95 kW at $h=24$**), outperforming LightGBM beyond $h=4$.
+- **Solar PV Generation**: LightGBM MAE increases across daytime lookaheads, fluctuating between ~240 kW and ~292 kW for horizons $h=6 \dots 24$, ending at **265.52 kW at $h=24$**. Solar persistence stays relatively flat (~85.1 kW to 86.2 kW, ending at **85.57 kW at $h=24$**) due to the high proportion of zero-generation nighttime winter hours.
+
+Crucially, because the receding-horizon MPC controller executes **only the immediate action ($h=1$)** before advancing time and reforecasting with fresh observations, the operational control loop actuates continuously within the high-accuracy regime where LightGBM dominates.
 
 ---
 
@@ -219,7 +223,7 @@ All values are canonical measurements from `reports/experiments_results.json`:
 ### 9.2 Key Findings & Interpretation
 
 1. **Rule-Based Inaction Trap**:
-   In low-renewable winter regimes, total solar generation ($159.4\text{ MWh}$) is less than 6% of total demand ($2,819.6\text{ MWh}$). Because instantaneous solar output never exceeds demand, the surplus condition $P_{solar} > P_{load}$ is never triggered after the initial hours. The rule-based controller discharges its initial charge in the first two hours and then remains idle at minimum SOC ($0.10$) for $1,288$ of the $1,290$ hours ($99.85\%$). It provides **$0.00\%$ peak shaving** and saves only **$0.10\%$** (€318.79).
+   In low-renewable winter regimes, total solar generation ($159.4\text{ MWh}$) is less than 6% of total demand ($2,819.6\text{ MWh}$). Because instantaneous solar output never exceeds demand, the surplus condition $P_{solar} > P_{load}$ is never triggered after the initial hours. The rule-based controller discharges its initial charge in the first two hours and then remains idle at minimum SOC ($0.10$) for **$1,288$ of the $1,290$ hours ($99.845\%$, or approximately $99.85\%$)**. It provides **$0.00\%$ peak shaving** and saves only **$0.10\%$** (€318.79).
 2. **Temporal Energy Shifting, Not Grid Energy Reduction**:
    System C consumes **+0.752774% more grid energy** than System B (+20,011.15 kWh) and **+0.680814% more grid energy** than System A (+18,111.15 kWh). This increase reflects round-trip conversion losses ($\eta_{rt} = 90.25\%$) incurred during cyclic charging and discharging. GridFlex AI does not reduce net grid energy consumption; its demonstrated value consists of shifting energy from high-price peak hours to low-price off-peak hours and reducing peak demand by **$245.77\text{ kW}$ ($7.49\%$)**, saving **$€13,452.18$ ($4.31\%$)**.
 3. **Curtailment and Renewable Utilisation**:
@@ -286,7 +290,7 @@ Evaluates dispatch policy robustness by injecting zero-mean Gaussian noise into 
 3. **Battery Operating States**:
    - System C: Operates in the intermediate dynamic SOC range for $81.24\%$ of test hours (1,048 hrs), with $15.89\%$ depleted hours (205 hrs), $2.87\%$ saturated hours (37 hrs), and mean SOC $43.71\%$.
    - System D (Oracle): Reaches full saturation for $24.88\%$ of test hours (321 hrs), with $13.26\%$ depleted hours (171 hrs), $61.86\%$ intermediate hours (798 hrs), and mean SOC $55.14\%$. Omniscient lookahead enables more aggressive overnight pre-charging.
-   - System B: Remains at minimum SOC ($0.10$) for $99.85\%$ of the evaluation period (1,288 hrs), confirming the reactive inaction trap.
+   - System B: Remains at minimum SOC ($0.10$) and completely idle (zero charge and zero discharge power) for $99.845\%$ of the evaluation period (1,288 of 1,290 hrs), confirming the reactive inaction trap.
 4. **Stress Episodes**:
    - Atypical holiday demand profiles (e.g., Christmas Day `2024-12-25`, load MAE $= 87.95\text{ kW}$) produced the highest forecast error, reflecting behavioral deviations from standard calendar patterns.
 

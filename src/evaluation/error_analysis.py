@@ -17,6 +17,7 @@ import numpy as np
 import pandas as pd
 from scipy import stats
 
+from src.battery.rule_based import run_rule_based_battery_baseline
 from src.optimization.rolling_horizon import run_rolling_horizon_simulation
 from src.utils.config import load_yaml_config
 from src.utils.logger import get_logger
@@ -95,6 +96,7 @@ def analyze_battery_dynamics(
     min_soc: float = 0.10,
     max_soc: float = 0.90,
     tol: float = 0.01,
+    sim_b_df: pd.DataFrame | None = None,
 ) -> dict[str, Any]:
     """Analyze battery SOC saturation, depletion, and cycling characteristics."""
     total_hours = len(sim_c_df)
@@ -124,10 +126,33 @@ def analyze_battery_dynamics(
             "diurnal_soc_profile": diurnal_soc,
         }
 
-    return {
+    res: dict[str, Any] = {
         "system_c_forecast": _soc_dynamics(sim_c_df),
         "system_d_oracle": _soc_dynamics(sim_d_df),
     }
+
+    if sim_b_df is not None:
+        b_dyn = _soc_dynamics(sim_b_df)
+        p_ch = (
+            sim_b_df["battery_charge_kw"].to_numpy()
+            if "battery_charge_kw" in sim_b_df.columns
+            else np.zeros(len(sim_b_df))
+        )
+        p_dis = (
+            sim_b_df["battery_discharge_kw"].to_numpy()
+            if "battery_discharge_kw" in sim_b_df.columns
+            else np.zeros(len(sim_b_df))
+        )
+        idle_hours = int(np.sum((p_ch == 0.0) & (p_dis == 0.0)))
+        b_dyn["idle_hours"] = idle_hours
+        b_dyn["idle_pct"] = float(idle_hours / len(sim_b_df) * 100)
+        b_dyn["minimum_soc_hours"] = b_dyn["depleted_hours"]
+        b_dyn["minimum_soc_pct"] = b_dyn["depleted_pct"]
+        b_dyn["minimum_soc_value"] = min_soc
+        b_dyn["total_evaluation_hours"] = len(sim_b_df)
+        res["system_b_rule_based"] = b_dyn
+
+    return res
 
 
 def analyze_oracle_performance_gap(
@@ -332,6 +357,17 @@ def run_error_analysis(
     df_test["solar_kw"] = test_preds_df["actual_solar_h1"].to_numpy()
 
     logger.info("Executing simulation traces for error analysis...")
+    sim_b, _ = run_rule_based_battery_baseline(
+        df_test,
+        capacity_kwh=b_cfg["capacity_kwh"],
+        max_charge_kw=b_cfg["max_charge_kw"],
+        max_discharge_kw=b_cfg["max_discharge_kw"],
+        min_soc=b_cfg["min_soc"],
+        max_soc=b_cfg["max_soc"],
+        charge_efficiency=b_cfg["charge_efficiency"],
+        discharge_efficiency=b_cfg["discharge_efficiency"],
+        initial_soc=b_cfg["initial_soc"],
+    )
     sim_c, _ = run_rolling_horizon_simulation(
         df=df,
         test_preds_df=test_preds_df,
@@ -372,7 +408,7 @@ def run_error_analysis(
 
     logger.info("Computing battery dynamics diagnostics...")
     battery_diag = analyze_battery_dynamics(
-        sim_c, sim_d, min_soc=b_cfg["min_soc"], max_soc=b_cfg["max_soc"]
+        sim_c, sim_d, min_soc=b_cfg["min_soc"], max_soc=b_cfg["max_soc"], sim_b_df=sim_b
     )
 
     logger.info("Computing oracle performance gap diagnostics...")
@@ -382,6 +418,7 @@ def run_error_analysis(
         "forecast": forecast_diag,
         "battery": battery_diag,
         "oracle_gap": oracle_gap_diag,
+        "system_b_rule_based": battery_diag.get("system_b_rule_based", {}),
     }
 
     # Save JSON report

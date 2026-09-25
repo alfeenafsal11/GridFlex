@@ -5,6 +5,7 @@ from src.evaluation.validate_artifacts import (
     validate_dashboard_code,
     validate_error_analysis,
     validate_figure_files,
+    validate_forecast_metrics,
 )
 
 
@@ -15,6 +16,10 @@ def test_artifact_validation_all():
 
     err = validate_error_analysis()
     assert "forecast" in err
+    assert "system_b_rule_based" in err["battery"]
+
+    f_met = validate_forecast_metrics()
+    assert "per_horizon" in f_met
 
     validate_figure_files()
     validate_dashboard_code()

@@ -130,6 +130,44 @@ def validate_error_analysis(json_path: Path = Path("reports/error_analysis_resul
     assert d_bat["depleted_hours"] == 171, f"System D depleted hours: {d_bat['depleted_hours']}"
     assert d_bat["saturated_hours"] == 321, f"System D saturated hours: {d_bat['saturated_hours']}"
 
+    b_bat = data["battery"]["system_b_rule_based"]
+    assert b_bat["minimum_soc_hours"] == 1288, f"System B min SOC hours: {b_bat['minimum_soc_hours']}"
+    assert math.isclose(b_bat["minimum_soc_pct"], 99.844961, rel_tol=1e-4), f"System B min SOC pct: {b_bat['minimum_soc_pct']}"
+    assert b_bat["idle_hours"] == 1288, f"System B idle hours: {b_bat['idle_hours']}"
+    assert b_bat["total_evaluation_hours"] == 1290, f"System B total hours: {b_bat['total_evaluation_hours']}"
+    assert b_bat["minimum_soc_value"] == 0.10, f"System B min SOC value: {b_bat['minimum_soc_value']}"
+
+    return data
+
+
+def validate_forecast_metrics(json_path: Path = Path("data/processed/forecast_metrics.json")) -> dict:
+    """Validate canonical forecasting metrics for immediate lookahead and terminal horizon."""
+    if not json_path.exists():
+        raise FileNotFoundError(f"Missing forecast metrics file: {json_path}")
+    with open(json_path, encoding="utf-8") as f:
+        data = json.load(f)
+
+    p_horiz = data["per_horizon"]
+    load_h1_mae = p_horiz["load"]["lightgbm"]["1"]["mae"]
+    load_h24_mae = p_horiz["load"]["lightgbm"]["24"]["mae"]
+    load_h1_pers = p_horiz["load"]["persistence"]["1"]["mae"]
+    load_h24_pers = p_horiz["load"]["persistence"]["24"]["mae"]
+
+    solar_h1_mae = p_horiz["solar"]["lightgbm"]["1"]["mae"]
+    solar_h24_mae = p_horiz["solar"]["lightgbm"]["24"]["mae"]
+    solar_h1_pers = p_horiz["solar"]["persistence"]["1"]["mae"]
+    solar_h24_pers = p_horiz["solar"]["persistence"]["24"]["mae"]
+
+    assert math.isclose(load_h1_mae, 47.0585, abs_tol=0.01), f"Load h=1 LGBM MAE: {load_h1_mae}"
+    assert math.isclose(load_h1_pers, 109.5594, abs_tol=0.01), f"Load h=1 Pers MAE: {load_h1_pers}"
+    assert math.isclose(load_h24_mae, 135.9120, abs_tol=0.01), f"Load h=24 LGBM MAE: {load_h24_mae}"
+    assert math.isclose(load_h24_pers, 109.9451, abs_tol=0.01), f"Load h=24 Pers MAE: {load_h24_pers}"
+
+    assert math.isclose(solar_h1_mae, 67.5921, abs_tol=0.01), f"Solar h=1 LGBM MAE: {solar_h1_mae}"
+    assert math.isclose(solar_h1_pers, 86.2023, abs_tol=0.01), f"Solar h=1 Pers MAE: {solar_h1_pers}"
+    assert math.isclose(solar_h24_mae, 265.5158, abs_tol=0.01), f"Solar h=24 LGBM MAE: {solar_h24_mae}"
+    assert math.isclose(solar_h24_pers, 85.5747, abs_tol=0.01), f"Solar h=24 Pers MAE: {solar_h24_pers}"
+
     return data
 
 
@@ -175,6 +213,8 @@ def main() -> None:
     print("[PASS] Canonical experiment results validated.")
     validate_error_analysis()
     print("[PASS] Error analysis diagnostics validated.")
+    validate_forecast_metrics()
+    print("[PASS] Forecasting multi-horizon metrics validated.")
     validate_figure_files()
     print("[PASS] All 11 publication figures validated.")
     validate_dashboard_code()

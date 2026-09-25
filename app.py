@@ -31,6 +31,7 @@ def load_processed_data():
     preds_path = Path("data/processed/test_predictions.parquet")
     results_path = Path("reports/experiments_results.json")
     error_path = Path("reports/error_analysis_results.json")
+    fmetrics_path = Path("data/processed/forecast_metrics.json")
 
     df = pd.read_parquet(data_path) if data_path.exists() else pd.DataFrame()
     preds = pd.read_parquet(preds_path) if preds_path.exists() else pd.DataFrame()
@@ -45,7 +46,12 @@ def load_processed_data():
         with open(error_path, encoding="utf-8") as f:
             error_diag = json.load(f)
 
-    return df, preds, results, error_diag
+    fmetrics = {}
+    if fmetrics_path.exists():
+        with open(fmetrics_path, encoding="utf-8") as f:
+            fmetrics = json.load(f)
+
+    return df, preds, results, error_diag, fmetrics
 
 
 def main():
@@ -55,13 +61,27 @@ def main():
         "*Submission Prototype for IRENA Youth Forum 2027* | Verified on Dutch Distribution Grid (Alliander Benchmark)"
     )
 
-    df, preds, results, _error_diag = load_processed_data()
+    df, preds, results, error_diag, fmetrics = load_processed_data()
 
     # Strict scientific validation: do not silently fall back to synthetic constants
     if not results or "core_systems" not in results or "comparisons" not in results:
         st.error(
             "ERROR: Canonical experiment results unavailable. "
             "Run the experiment pipeline before displaying KPI values."
+        )
+        st.stop()
+
+    if not error_diag or "battery" not in error_diag:
+        st.error(
+            "ERROR: Canonical error analysis diagnostics unavailable. "
+            "Run error analysis before displaying diagnostic views."
+        )
+        st.stop()
+
+    if not fmetrics or "per_horizon" not in fmetrics:
+        st.error(
+            "ERROR: Canonical forecasting metrics unavailable. "
+            "Run the forecasting pipeline before displaying accuracy metrics."
         )
         st.stop()
 
@@ -184,10 +204,11 @@ def main():
         st.dataframe(pd.DataFrame(table_data), use_container_width=True)
 
         st.info(
-            "**Core Findings**: GridFlex AI delivers a 7.49% peak demand reduction (245.8 kW shaved) and "
-            "4.31% cost savings (€13,452) relative to the surplus-following rule-based battery controller over the "
-            "evaluated winter test period. Total cost is within 0.72% of the perfect-foresight oracle cost "
-            "(capturing 86.3% of the incremental savings opportunity). Total grid energy consumption is not reduced "
+            f"**Core Findings**: GridFlex AI delivers a {peak_shaving_pct:.2f}% peak demand reduction "
+            f"({peak_b - peak_c:.1f} kW shaved) and {cost_savings_pct:.2f}% cost savings (€{cost_savings_eur:,.0f}) "
+            "relative to the surplus-following rule-based battery controller over the "
+            f"evaluated winter test period. Total cost is within {oracle_cost_gap_pct:.2f}% of the perfect-foresight oracle cost "
+            f"(capturing {economic_benefit_capture_pct:.1f}% of the incremental savings opportunity). Total grid energy consumption is not reduced "
             "(+0.75% due to battery round-trip efficiency losses), and renewable curtailment is 0 across all systems. "
             "The demonstrated value is temporal energy shifting, peak shaving, and price-aware storage dispatch."
         )
@@ -266,12 +287,31 @@ def main():
             "Forecasting performance is strongest at short horizons ($h=1$) and degrades with lead time."
         )
 
+        l_h1 = fmetrics["per_horizon"]["load"]["lightgbm"]["1"]
+        l_pers1 = fmetrics["per_horizon"]["load"]["persistence"]["1"]
+        s_h1 = fmetrics["per_horizon"]["solar"]["lightgbm"]["1"]
+        s_pers1 = fmetrics["per_horizon"]["solar"]["persistence"]["1"]
+        l_red = (l_pers1["mae"] - l_h1["mae"]) / l_pers1["mae"] * 100.0
+        s_red = (s_pers1["mae"] - s_h1["mae"]) / s_pers1["mae"] * 100.0
+
         col1, col2 = st.columns(2)
         with col1:
-            st.metric("Consumer Load 1h MAE", "47.06 kW", "-57.05% vs Persistence (109.56 kW)")
-            st.metric("Consumer Load 1h nRMSE", "3.06%", "Short-horizon baseline tracking")
+            st.metric(
+                "Consumer Load 1h MAE",
+                f"{l_h1['mae']:.2f} kW",
+                f"-{l_red:.2f}% vs Persistence ({l_pers1['mae']:.2f} kW)",
+            )
+            st.metric(
+                "Consumer Load 1h nRMSE",
+                f"{l_h1['nrmse'] * 100:.2f}%",
+                "Short-horizon baseline tracking",
+            )
         with col2:
-            st.metric("Solar PV 1h MAE", "67.59 kW", "-21.59% vs Persistence (86.20 kW)")
+            st.metric(
+                "Solar PV 1h MAE",
+                f"{s_h1['mae']:.2f} kW",
+                f"-{s_red:.2f}% vs Persistence ({s_pers1['mae']:.2f} kW)",
+            )
             st.metric("Leakage Verification", "Passed (0.000000)", "Zero lookahead contamination")
 
         fig_path = Path("figures/fig05_forecast_performance.png")
@@ -341,22 +381,33 @@ def main():
             "Failure mode analysis and state of charge operating dynamics across 1,290 evaluation hours."
         )
 
+        b_bat = error_diag.get("battery", {}).get("system_b_rule_based", {})
+        c_bat = error_diag.get("battery", {}).get("system_c_forecast", {})
+        d_bat = error_diag.get("battery", {}).get("system_d_oracle", {})
+        worst_load = error_diag.get("forecast", {}).get("worst_load_days", [])
+
         col1, col2 = st.columns(2)
         with col1:
             st.markdown("##### Battery State of Charge Utilization")
             st.write(
-                "- **System C Dynamic Cycling**: 81.24% in intermediate range (15.89% depleted, 2.87% saturated; mean SOC 43.71%)."
+                f"- **System C Dynamic Cycling**: {c_bat.get('intermediate_pct', 0.0):.2f}% in intermediate range "
+                f"({c_bat.get('depleted_pct', 0.0):.2f}% depleted, {c_bat.get('saturated_pct', 0.0):.2f}% saturated; "
+                f"mean SOC {c_bat.get('mean_soc', 0.0) * 100:.2f}%)."
             )
             st.write(
-                "- **System B Heuristic Inaction**: 99.85% of time stuck at minimum SOC (0.10) after initial discharge."
+                f"- **System B Heuristic Inaction**: {b_bat.get('minimum_soc_pct', 0.0):.2f}% of time "
+                f"({b_bat.get('minimum_soc_hours', 0)} hrs) pinned at minimum SOC "
+                f"({b_bat.get('minimum_soc_value', 0.10):.2f}) and completely idle after initial discharge."
             )
             st.write(
-                "- **System D Oracle Aggressiveness**: 24.88% saturation due to confident overnight charging (mean SOC 55.14%)."
+                f"- **System D Oracle Aggressiveness**: {d_bat.get('saturated_pct', 0.0):.2f}% saturation "
+                f"due to confident overnight charging (mean SOC {d_bat.get('mean_soc', 0.0) * 100:.2f}%)."
             )
         with col2:
             st.markdown("##### Highest Error Episodes")
-            st.write("- **2024-12-25 (Christmas Day)**: Load MAE = 87.95 kW (holiday occupancy deviation).")
-            st.write("- **2024-12-27 (Bridge Day)**: Load MAE = 81.22 kW (atypical commercial load).")
+            if len(worst_load) >= 2:
+                st.write(f"- **{worst_load[0]['date']}**: Load MAE = {worst_load[0]['mae_kw']:.2f} kW (holiday occupancy deviation).")
+                st.write(f"- **{worst_load[1]['date']}**: Load MAE = {worst_load[1]['mae_kw']:.2f} kW (atypical commercial load).")
             st.write("- **Morning Ramp (07:00–08:00 UTC)**: Highest diurnal variance (MAE = 83.79 kW).")
 
         fig_path = Path("figures/fig11_error_analysis.png")

@@ -203,28 +203,57 @@ def run_forecasting_pipeline(
     logger.info("Saved forecast metrics to %s", out_metrics_path)
 
     # Generate Figure 5
+    generate_figure_5(eval_results, test_predictions, figures_dir=figures_dir)
+
+    return {
+        "summary_metrics": summary_metrics,
+        "eval_results": eval_results,
+        "test_predictions": test_predictions,
+        "models": {"load": models_load, "solar": models_solar},
+    }
+
+
+def generate_figure_5(
+    eval_results: dict[str, Any],
+    test_predictions: pd.DataFrame,
+    figures_dir: str = "figures",
+) -> Path:
+    """Generate Figure 5 directly from evaluation results and test predictions."""
+    fig_dir = Path(figures_dir)
+    fig_dir.mkdir(parents=True, exist_ok=True)
+    fig5_path = fig_dir / "fig05_forecast_performance.png"
+
+    horizons_list = list(range(1, 25))
     _fig, axes = plt.subplots(2, 2, figsize=(14, 10))
 
+    def get_mae(series: str, model: str, h: int) -> float:
+        sub = eval_results[series][model]
+        if h in sub:
+            return float(sub[h]["mae"])
+        return float(sub[str(h)]["mae"])
+
     # Top-Left: Load Error across Horizons
-    load_lgbm_mae = [eval_results["load"]["lightgbm"][h]["mae"] for h in horizons_list]
-    load_pers_mae = [eval_results["load"]["persistence"][h]["mae"] for h in horizons_list]
+    load_lgbm_mae = [get_mae("load", "lightgbm", h) for h in horizons_list]
+    load_pers_mae = [get_mae("load", "persistence", h) for h in horizons_list]
     axes[0, 0].plot(horizons_list, load_lgbm_mae, "o-", color="#1f77b4", label="LightGBM MAE (kW)", lw=2)
     axes[0, 0].plot(horizons_list, load_pers_mae, "s--", color="#7f7f7f", label="Persistence MAE (kW)", lw=2)
-    axes[0, 0].set_title("Electrical Demand: MAE vs Forecast Horizon")
+    axes[0, 0].set_title("Electrical Demand: MAE vs Forecast Horizon", fontsize=11, fontweight="bold")
     axes[0, 0].set_xlabel("Horizon h (Hours)")
     axes[0, 0].set_ylabel("MAE (kW)")
     axes[0, 0].set_xticks(horizons_list)
+    axes[0, 0].grid(True, linestyle=":", alpha=0.6)
     axes[0, 0].legend()
 
     # Top-Right: Solar Error across Horizons
-    solar_lgbm_mae = [eval_results["solar"]["lightgbm"][h]["mae"] for h in horizons_list]
-    solar_pers_mae = [eval_results["solar"]["persistence"][h]["mae"] for h in horizons_list]
+    solar_lgbm_mae = [get_mae("solar", "lightgbm", h) for h in horizons_list]
+    solar_pers_mae = [get_mae("solar", "persistence", h) for h in horizons_list]
     axes[0, 1].plot(horizons_list, solar_lgbm_mae, "o-", color="#ff7f0e", label="LightGBM MAE (kW)", lw=2)
     axes[0, 1].plot(horizons_list, solar_pers_mae, "s--", color="#7f7f7f", label="Persistence MAE (kW)", lw=2)
-    axes[0, 1].set_title("Solar Generation: MAE vs Forecast Horizon")
+    axes[0, 1].set_title("Solar Generation: MAE vs Forecast Horizon", fontsize=11, fontweight="bold")
     axes[0, 1].set_xlabel("Horizon h (Hours)")
     axes[0, 1].set_ylabel("MAE (kW)")
     axes[0, 1].set_xticks(horizons_list)
+    axes[0, 1].grid(True, linestyle=":", alpha=0.6)
     axes[0, 1].legend()
 
     # Bottom: Sample 5-day Test Window Trajectory (h=1)
@@ -236,8 +265,9 @@ def run_forecasting_pipeline(
     axes[1, 0].plot(
         sample_sub.index, sample_sub["pred_load_pers_h1"], label="Persistence (h=1)", color="#7f7f7f", lw=1, linestyle=":"
     )
-    axes[1, 0].set_title("Demand Trajectory Sample (Test Period, h=1)")
+    axes[1, 0].set_title("Demand Trajectory Sample (Test Period, h=1)", fontsize=11, fontweight="bold")
     axes[1, 0].set_ylabel("Power (kW)")
+    axes[1, 0].grid(True, linestyle=":", alpha=0.6)
     axes[1, 0].legend(loc="upper right")
 
     axes[1, 1].plot(sample_sub.index, sample_sub["actual_solar_h1"], label="Actual Solar", color="black", lw=1.5)
@@ -247,23 +277,27 @@ def run_forecasting_pipeline(
     axes[1, 1].plot(
         sample_sub.index, sample_sub["pred_solar_pers_h1"], label="Persistence (h=1)", color="#7f7f7f", lw=1, linestyle=":"
     )
-    axes[1, 1].set_title("Solar Trajectory Sample (Test Period, h=1)")
+    axes[1, 1].set_title("Solar Trajectory Sample (Test Period, h=1)", fontsize=11, fontweight="bold")
     axes[1, 1].set_ylabel("Power (kW)")
+    axes[1, 1].grid(True, linestyle=":", alpha=0.6)
     axes[1, 1].legend(loc="upper right")
 
     plt.tight_layout()
-    fig5_path = Path(figures_dir) / "fig05_forecast_performance.png"
     plt.savefig(fig5_path, dpi=200)
     plt.close()
     logger.info("Saved Figure 5 to %s", fig5_path)
-
-    return {
-        "summary_metrics": summary_metrics,
-        "eval_results": eval_results,
-        "test_predictions": test_predictions,
-        "models": {"load": models_load, "solar": models_solar},
-    }
+    return fig5_path
 
 
 if __name__ == "__main__":
-    run_forecasting_pipeline()
+    import sys
+
+    if "--figures-only" in sys.argv:
+        metrics_file = Path("data/processed/forecast_metrics.json")
+        preds_file = Path("data/processed/test_predictions.parquet")
+        with open(metrics_file, encoding="utf-8") as f_in:
+            m_data = json.load(f_in)
+        preds_df = pd.read_parquet(preds_file)
+        generate_figure_5(m_data["per_horizon"], preds_df)
+    else:
+        run_forecasting_pipeline()
