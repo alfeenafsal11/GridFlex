@@ -11,6 +11,9 @@ data/raw/*
 !data/raw/.gitkeep
 data/processed/*
 !data/processed/.gitkeep
+!data/processed/gridflex_hourly.parquet
+!data/processed/test_predictions.parquet
+!data/processed/forecast_metrics.json
 
 # Environments
 venv/

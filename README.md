@@ -3,6 +3,7 @@
 [![Python 3.11](https://img.shields.io/badge/python-3.11-blue.svg)](https://www.python.org/downloads/)
 [![Code style: ruff](https://img.shields.io/badge/code%20style-ruff-000000.svg)](https://github.com/astral-sh/ruff)
 [![Tests: pytest](https://img.shields.io/badge/tests-30%20passed-brightgreen.svg)](https://docs.pytest.org/)
+[![Streamlit App](https://static.streamlit.io/badges/streamlit_badge_black_white.svg)](https://gridflex.streamlit.app/)
 [![IRENA Youth Forum 2027](https://img.shields.io/badge/IRENA%20Youth%20Forum-2027%20Submission-orange.svg)](https://www.irena.org/)
 
 An end-to-end, reproducible, and mathematically constrained research prototype investigating how machine-learning-based forecasting combined with rolling-horizon battery optimization provides flexibility in a renewable-integrated distribution grid environment.
@@ -248,4 +249,4 @@ All 11 research figures are saved at 200–300 DPI in `figures/`:
 **GridFlex AI Research Initiative**  
 Prepared for submission to the **IRENA Youth Forum 2027**  
 *Track: Innovation in Renewable Energy Integration, Grid Flexibility & Clean Energy Transition*  
-Repository: [https://github.com/gridflex-ai/gridflex](https://github.com/gridflex-ai/gridflex)
+Repository: [https://github.com/alfeenafsal11/GridFlex](https://github.com/alfeenafsal11/GridFlex)
